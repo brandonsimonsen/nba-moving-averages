@@ -3,7 +3,7 @@ title: "Moving Average Experiment"
 output: html_notebook
 ---
 
-```{r loading packages and installing any missing}
+```{r loading packages and installing any missing, echo = FALSE}
 l.packages <- c('plyr','dplyr','ggplot2','TTR','shiny','data.table','RColorBrewer')
 for (package in l.packages) {
     if (!require(package, character.only=T, quietly=T, warn.conflicts=F)) {
@@ -13,7 +13,7 @@ for (package in l.packages) {
 }
 ```
 
-```{r loading/preparing the data}
+```{r loading/preparing the data, echo = FALSE}
 # loading data sets
 df.pace.limits <- readRDS('datasets/df.pace.climits.rds')
 l.pace <- readRDS('datasets/ldf.pace.rds')
@@ -28,11 +28,11 @@ ldf.pace.split <- lapply(l.pace.split, function(x) lapply(x, function(y) as.data
 
 ## Introduction/Background
 
-I love statistics. I don't mean numbers, although I suppose that's wrapped up in it. I mean [Statistics](https://en.wikipedia.org/wiki/Statistics) as in, the branch of mathematics. There's one specific application of statistics that I love above all the rest -- forecasting. It's the most interesting application as well as the most difficult. Anyone can forecast, but to do so with the highest degree of accuracy requires a great deal of mathematical knowledge generally, and statistics knowledge specifically.
+I love statistics. I don't mean numbers, although I suppose that's wrapped up in it. I mean [Statistics](https://en.wikipedia.org/wiki/Statistics) as in, the branch of mathematics. There's one specific application of statistics that I love above all the rest -- forecasting. It's the most interesting application as well as the most difficult. Anyone can forecast today with little more than the click of a button using the extensive data analysis tools out there today, but to do so with the highest degree of accuracy requires a great deal of mathematical knowledge generally, and statistics knowledge specifically.
 
-I'm also a big sports fanatic. There's a lot to love: spectacle, drama, intensity, strategy, camaraderie, and more. I left one of my favorite parts out though -- statistics. In this case, I *do* mean statistics as in numbers. Sports provide an interminable, ever-changing flow of statistics with which there are potentially infinite analyses to be derived.
+I'm also a big sports fanatic. There's a lot to love: spectacle, drama, intensity, strategy, camaraderie, and more. I left one of my favorite parts out though -- statistics. This time, I *do* mean statistics as in numbers. Sports provide an interminable, ever-changing flow of statistics with which there are potentially infinite analyses to be derived.
 
-So I painted a grand picture, now let me bring things back to the very small corner this little analysis will cover. I would like to be able to forecast NBA games with the highest degree of accuracy I can. NBA statistics are legion and there are relationships between the different statistics which greatly complicate this forecasting process. There is one stat though that applies across most of the others, and that is *Pace*, which is used to determine per-possession stats. Per-possession stats will give much greater accuracy to forecasting models over per-game stats. If you aren't already familiar with this idea, the reasoning is actually fairly simple. Per-game statistics are heavily biased by overtime, and also vary quite a bit depending on how 'fast' or 'slow' each particular game is (e.g. 'fast' against teams like the Warriors or Rockets who play at a quick pace, 'slow' against teams like the Jazz who play at a slow pace). Because of this variance in pace,  per-game statistics aren't as meaningful since they aren't all based on a smaller common unit. Pace is based on number of possessions, which is scalable across over all games, all teams, and all years. This makes Pace and per-possession statistics the most unbiased((insert footnote thing here: note: [*bias*](https://en.wikipedia.org/wiki/Bias_of_an_estimator) (and therefore *unbiased*) is an important statistical term and has multiple applications and meanings. A statistic being biased doesn't necessarily make it always worse than an unbiased statistic. In this case however, it almost definitely would.)) statistics we can use, which will improve forecasting accuracy.
+So I painted the big picture, now let me bring things back to the very small corner this little analysis will cover. I would like to be able to forecast NBA games with the highest degree of accuracy I can. NBA statistics are legion and there are relationships between the different statistics which greatly complicate this forecasting process. There is one stat though that applies across most of the others, and that is **Pace**, which is used to determine per-possession stats. Per-possession stats will give much greater accuracy to forecasting models over per-game stats. If you aren't already familiar with this idea, the reasoning is actually fairly simple. Per-game statistics are heavily biased by overtime, and also vary quite a bit depending on how 'fast' or 'slow' each particular game is (e.g. 'fast' against teams like the Warriors or Rockets who play at a quick pace, 'slow' against teams like the Jazz who play at a slow pace). Because of this variance in Pace,  per-game statistics aren't as meaningful since they aren't all based on a smaller common unit. Pace is based on number of possessions, which is scalable across over all games, all teams, and all years. This makes Pace and per-possession statistics the most unbiased^[*bias* (and therefore *unbiased*) is an important statistical term and has multiple applications and meanings. A statistic being biased doesn't necessarily make it always worse than an unbiased statistic. In this case however, it almost definitely would. https://en.wikipedia.org/wiki/Bias_of_an_estimator] statistics we can use, which will improve forecasting accuracy.
 
 Now we can get to the meat of the analysis. My objective is to predict Pace in the most accurate way possible, to use as a foundation for the rest of the predictive statistics. But how to predict Pace? 
 
@@ -40,7 +40,7 @@ Now we can get to the meat of the analysis. My objective is to predict Pace in t
 
 A good first step in any analysis is visualizing the data you are hoping to analyze. To get a feel for what Pace might look like for a team across a single season, let's take a look at an example team's pace by game from last season (2016-2017). The Utah Jazz are the default team, but you can look at any other team's pace from last season by choosing them from the dropdown menu.
 
-```{r shiny team pace time series}
+```{r shiny team pace time series, echo = FALSE}
 shinyAppDir("paceTS"
 )
 ```
@@ -48,17 +48,14 @@ shinyAppDir("paceTS"
 
 Hmm... patterns look familiar? How about now?
 
-[[insert Apple (or some other stock) price chart]]
-```{r static stock chart}
-#need to add this
-```
+![Caption for the picture.](pictures/apple stock.png)
 
 
 Looks kind of like a stock price chart right? We can use the similarities to our advantage and use a concept well-known to the stock price forecasting world -- moving averages.
 
-Moving averages are a critical component to financial forecasts. The reason why this is that things like stock price (and in our case, Pace) are *auto-correlated*, meaning that each stock price (or Pace) at time *n* is very closely related to the stock price right before it, at time *n-1*. There can also be yearly and/or seasonal adjustments you can include in these type of models as well (e.g. larger sales during the holidays). This family of methods/analysis is called [Time Series Analysis](https://onlinecourses.science.psu.edu/stat510/node/47) and can get much more complicated. I'm going to keep it simple and only focus on moving averages for now.
+Moving averages are a critical component to financial forecasts. The reason why this is that things like stock price (and in our case, Pace) are *auto-correlated*, meaning that each stock price (or Pace) at time *n* is very closely related to the stock price right before it, at time *n-1*. There can also be yearly and/or seasonal adjustments you can include in these type of models as well (e.g. larger sales during the holidays). This family of methods/analysis is called [Time Series Analysis](https://onlinecourses.science.psu.edu/stat510/node/47) and can get much more complicated. I'm going to keep it simple and only focus on moving averages for this analysis.
 
-One quick check I wanted to make before moving on was whether Pace differs depending on whether teams are at home or away. Initially I thought this would be a significant difference. As it turns out, the differences are trivial. They are well within the statistically significant confidence bounds (and in the overwhelming majority of cases, it's not even close), which you can see for each team below.
+One quick check I wanted to make before moving on was whether Pace differs significantly in Home games vs Away games. Initially I thought this would be a significant difference. As it turns out, the differences are trivial. They are well within the statistically significant confidence bounds (and in the overwhelming majority of cases, it's not even close), which you can see for each team below.
 
 
 ```{r shiny team pace confidence limits, echo = FALSE}
@@ -68,9 +65,9 @@ shinyAppDir("PaceCL"
 
 ## Moving Averages
 
-Now that we have established that Home/Away isn't an important distinction to make, we can move on to the real meat of this analysis. I wanted to analyze whether some sort of moving average would be better for predicting Pace than a simple season-long average. A simple season-long average is what you would see reported as 'Pace' on sites like [Basketball Reference](https://www.basketball-reference.com/leagues/NBA_2017.html#misc_stats::none).((site note thing: It's also important at this point to point out that Pace is calculated by a formula. Link to BBR formula.)) If you go to that link, this table shows the ending average 2017 Regular Season Pace for each team. Throughout the season however, this table (and Pace specifically) will be updated daily. So after each team has played their first game, the Pace column will show the pace for that game only, since it would be the only game of the season so far. After 2 games, it would be the average of those 2, etc. until we get to 82 games at which point it will be the average of all 82. So after any given number of games, all games contribute the same weight to the season-long average. Fairly simple right? Here's the potential problem I see with this particular average: when viewed *cummulatively* across an entire season, it gives an exponentially skewed weighting to earlier games. If I lost you there, take a look at the following plot, which shows the total cummulative weight each game would contribute to a season-long average Pace. 
+Now that we have established that Home/Away isn't an important distinction to make, we can move on to the real meat of this analysis. I wanted to analyze whether some sort of moving average would be better for predicting Pace than a simple season-long average. A simple season-long average is what you would see reported as 'Pace' on sites like [Basketball Reference](https://www.basketball-reference.com/leagues/NBA_2017.html#misc_stats::none).^[It's also important at this point to point out that Pace is calculated by a formula which you can see here: https://www.basketball-reference.com/about/glossary.html] If you go to that link, this table shows the ending average 2017 Regular Season Pace for each team. Throughout the season however, this table (and Pace specifically) will be updated daily. So after each team has played their first game, the Pace column will show the pace for that game only, since it would be the only game of the season so far. After 2 games, it would be the average of those 2, etc. until we get to 82 games at which point it will be the average of all 82. So after any given number of games, all games contribute the same weight to the season-long average. Fairly simple right? Here's the potential problem I see with this: when viewed *cummulatively* across an entire season, it gives an exponentially skewed weighting to earlier games. If I lost you there, take a look at the following plot, which shows the total cummulative weight each game would contribute to a season-long average Pace. 
 
-```{r cummulative weights calculation}
+```{r cummulative weights calculation, echo = FALSE}
 df.wts <- data.table(Game = numeric(), Weight = numeric(), Cumm.Weight = numeric())[1:82]
 df.wts$Game <- seq_len(82)
 df.wts$Weight <- 1/seq_len(82)
@@ -79,7 +76,7 @@ for(i in 1:82){
 }
 ```
 
-```{r cummulative weights graph}
+```{r cummulative weights graph, echo = FALSE}
 g <- ggplot(data = df.wts, aes(x = Game, y = Cumm.Weight))
 h <- g + geom_point(aes(x = Game, y = Cumm.Weight))
 i <- h + theme_dark()
@@ -100,9 +97,9 @@ The difference between the averages is the weight that is assigned to each game 
 
 So how do we can we determine which moving average type and which window length is best? The approach I like to use in cases like this is an experimental one. Meaning: let's just try a bunch of different ones and see what happens! Luckily technology enables this with relative ease. I did the hard part of writing several functions in R to calculate the different moving averages with different lengths so that we can compare the results against each other.(insert footnote thing here linking to the code maybe?)
 
-There are 3 statistics that we'll be judging the results by. These are 'error', 'correlation', and 'bias'. In each case, these statistics are averages across all 30 teams. The fact that we are averaging across 30 teams introduces extra complexity to the analysis. This extra complexity matters, but does not ultimately change the outcome in this case, so to keep the analysis as simple as possible, I am going to ignore that extra complexity to keep the analysis simple.(insert footnote saying you can see the full data here, or by running the code yourself). 
+There are 3 statistics that we'll be judging the results by. These are **error**, **bias**, and **correlation**. In each case, these statistics are averages across all 30 teams. The fact that we are averaging across 30 teams introduces extra complexity to the analysis. This extra complexity matters, but does not ultimately change the outcome in this case, so to keep the analysis as simple as possible, I am going to ignore that extra complexity to keep the analysis simple.
 
-```{r season-long MA function and calculation}
+```{r season-long MA function and calculation, echo = FALSE}
 # function
 f.seasonMA <- function(x, var, prev, newcol){
   x[newcol] <- numeric(nrow(x))
@@ -123,7 +120,7 @@ l.pace.split <- lapply(l.pace.split, function(x) lapply(x, f.seasonMA,'Pace','pr
 l.pace <- lapply(l.pace.split, function(x) ldply(x))
 ```
 
-```{r Moving Average functions}
+```{r Moving Average functions, echo = FALSE}
 # Simple Moving Average
 f.SMA <- function(x, n, var, var2, newcol){
   newn <- n+1
@@ -154,7 +151,7 @@ f.EMA <- function(x, n, var, var2, newcol){
 }  
 ```
 
-```{r Statistical Functions}
+```{r Statistical Functions, echo = FALSE}
 # Error
 
 f.error.per <- function(x, var1, var2){
@@ -187,7 +184,7 @@ f.bias.mean.per <- function(data,ma.var){
 }
 ```
 
-```{r Calculation Function}
+```{r Calculation Function, echo = FALSE}
 f.ma <- function(data, type, nz){
   # data: list of dataframes (each list item is a dataframe of a single team's data. list naming is e.g. 'nba-atl')
   #   e.g. pace.list.allmas
@@ -314,7 +311,7 @@ First, there are different applications of what 'error' could mean. The specific
 What this represents is the average amount per game that the moving averages over or underestimate Pace on average across all 30 teams. While the Error represents the spread of the data, Bias represents how closely the predictions 'center' around the true Pace values. So what we really want is for this statistic to be as close to zero as possible. If it were literally zero, that would make our statistic an *unbiased* estimator. Having an unbiased estimator is a highly desirable trait in statistical analysis. It isn't always possible and in some cases a biased estimator will actually be a better predictor. At the very least though, we want to minimize the bias as much as possible, while also minimizing RMSE. 
 
 3. Correlation
-As with Error, there are different types of correlations that can be used. The statistic I will be using is actually an average of [3 different types of correlations](https://en.wikipedia.org/wiki/Correlation_and_dependence): Pearson (which is the most common, and what most people use), Kendall, and Spearman. And again, averaged across all 30 teams. Correlation can be any number between -1 and 1. In our case, we want our predicted Pace to be as close to the real value as possible, which would mean perfectly positively correlated and would have a correlation value of 1. So we want this statistic to be as large as possible.
+As with Error, there are different types of correlations that can be used. The statistic I will be using is actually an average of [3 different types of correlations](https://en.wikipedia.org/wiki/Correlation_and_dependence): Pearson (which is by far the most common, and what most people use), Kendall, and Spearman. And again, averaged across all 30 teams. Correlation can be any number between -1 and 1. In our case, we want our predicted Pace to be as close to the real value as possible, which would mean perfectly positively correlated and would have a correlation value of 1. So we want this statistic to be as large as possible.
 
 A couple additional details I need to mention first before we take a look at the results.
 
@@ -330,7 +327,7 @@ I chose to start with just a few window lengths to compare against the season-lo
 -Simple Moving Averages of length 5, 10, and 20
 -Exponential Moving Averages of length 5, 10, and 20
 
-In financial models, it's quite common to see moving average lengths much longer than these I have chosen. However, in the context of an NBA season, I think around the last 20 games is the longest I would care to consider, and around the last 5 games is the shortest I would consider. The reasons for this are fairly simple -- you don't want to have too few games, otherwise your moving average can get easily skewed by outliers. And you don't want too many games or else your moving average won't be sensitive enough to changes teams have made, such as trades, injuries, etc. A balance between all of these considerations (not to mention the balanace across all 30 teams and all years that we have data for) is what we are really looking to acheive here.
+In financial models, it's quite common to see moving average lengths much longer than these I have chosen. However, in the context of an NBA season, I think around the last 20 games is the longest I would care to consider, and around the last 5 games is the shortest I would consider. The reasons for this are fairly simple -- you don't want to have too few games, otherwise your moving average can get easily skewed by outliers. And you don't want too many games or else your moving average won't be sensitive enough to changes teams have made, such as trades, injuries, etc. A balance between all of these considerations (not to mention the balance across all 30 teams and all years that we have data for) is what we are really looking to achieve here.
 
 
 
@@ -338,7 +335,7 @@ In financial models, it's quite common to see moving average lengths much longer
 
 Let's take a look at the results.
 
-```{r Function calls and output simplification 5 10 20}
+```{r Function calls and output simplification 5 10 20, echo = FALSE}
 # lengths 5, 10, and 20
 l.stats.sma.51020 <- f.ma(l.pace,'SMA',c(5,10,20))
 l.stats.ema.51020 <- f.ma(l.pace,'EMA',c(5,10,20))
@@ -354,7 +351,7 @@ row.names(df.stats.51020) <- append(row.names(l.stats.sma.51020[[1]]),row.names(
 ```
 
 
-```{r MA type and length comparison plots 5 10 15, fig.height=12,fig.width=6}
+```{r MA type and length comparison plots 5 10 15, fig.height=12,fig.width=6, echo = FALSE}
 colrz.d <- c('azure','yellow','springgreen')
 
 df.stats.51020.melt <- df.stats.51020[,c('error','bias','correlation','type','length')]
@@ -388,7 +385,7 @@ Overall, it looks like we have a kind of sweet spot around window length 10, whe
 
 ## The Results - Part II
 
-```{r Function calls and output simplification 5 thru 15}
+```{r Function calls and output simplification 5 thru 15, echo = FALSE}
 # lengths 5 thru 15
 l.stats.sma.5thru15 <- f.ma(l.pace,'SMA',5:15)
 l.stats.ema.5thru15 <- f.ma(l.pace,'EMA',5:15)
@@ -403,7 +400,7 @@ row.names(df.stats.5thru15) <- append(row.names(l.stats.sma.5thru15[[1]]),row.na
         row.names(df.stats.5thru15.simplified) <- append(row.names(l.stats.sma.5thru15[[1]]),row.names(l.stats.ema.5thru15[[1]])[-1])
 ```
 
-```{r MA type and length comparison plots 5 thru 15, fig.height=12,fig.width=6}
+```{r MA type and length comparison plots 5 thru 15, fig.height=12,fig.width=6, echo = FALSE}
 colrz.d <- c('azure','yellow','springgreen')
 
 df.stats.5thru15.melt <- df.stats.5thru15[,c('error','bias','correlation','type','length')]
@@ -420,7 +417,7 @@ m <- l + facet_grid(variable~., scales = 'free_y')
 m
 ```
 
-So now how do we know which moving average is best, given this information we've gathered? This part is where I would say the *art* of statistics comes in. In big data applications, you often can/should leave questions like this up to the machine to decide what models and/or parameters are best using statistical tests. This is not the case with our data, and to be frank, I'm not aware of a test that could be used in this particular situation anyway (although I don't doubt there could be one or several). Since we're dealing with a relatively small dataset and we've already done the legwork in obtaining good summary statistics with which to base our choice off of, I think we can decide based on just the graphs you see above. 
+So now how do we know which moving average is best, given this information we've gathered? This part is where I would say the *art* of Statistics comes in. In big data applications, you often can/should leave questions like this up to the machine to decide what models and/or parameters are best using statistical tests. This is not the case with our data, and to be frank, I'm not aware of a test that could be used in this particular situation anyway (although I don't doubt there could be one or several). Since we're dealing with a relatively small dataset and we've already done the legwork in obtaining good summary statistics with which to base our choice off of, I think we can decide based on just the graphs you see above. 
 
 Let's take a brief look at each of the graphs. First, the Error curves for both SMA and EMA look nearly identical. The Bias curve for SMA looks much more appealing than the EMA curve/line does. For that reason, at this point I almost certainly am going to choose an SMA over any EMA, unless the Correlation of the EMAs blow the SMAs out of the water. Well, they don't. Similar to Error, the Correlation curves for both SMA and EMA look quite similar. The much smoother overall EMA Correlation curve has a certain appeal that they SMA Correlation curve does not, but overall they aren't too different.
 
@@ -431,6 +428,10 @@ We're kind of splitting hairs here. I can't say SMA9 is absolutely the best choi
 
 ## Conclusions
 
-Looping back to my original goal of comparing these different moving averages to the season-long average, there is no question in my mind that SMA9 is a superior predictor of Pace.^[and not only SMA9, but I would choose almost any of these moving averages of season-long] It's also important to point out that while I think SMA9 is a clear improvement over season-long, the amount of improvement overall is pretty modest. I would *not* say SMA9 is a *good* predictor of Pace, but it *is* better than season-long. Feeding SMA9 as an input into another model with additional parameters may provide an even better predictor of Pace. I'll leave that as an exercise for the reader.^[or maybe Part II??]
+Looping back to my original goal of comparing these different moving averages to the season-long average, there is no question in my mind that SMA9 is a superior predictor of Pace.^[and not only SMA9, but I would choose almost any of these moving averages of season-long] It's also important to point out that while I think SMA9 is a clear improvement over season-long, the amount of improvement overall is pretty modest. I would *not* say SMA9 is a *good* predictor of Pace, but it *is* better than season-long. Feeding SMA9 as an input into another model with additional parameters may provide an even better predictor of Pace.^[I plan to do just that myself, as well as exploring defense-adjusted Pace. I may have a Part II for this analysis that I will post at a later date.]
 
-I will definitely revisit this analysis going forward as I'm able to add data from additional seasons to see how things change, or not, as the case may be. After all of that work, the amount of improvement may not end up mattering as much as I might have initially hoped, but the experimenting it took to reach that conclusion was fun and always feels worth it to me.
+I will definitely revisit this analysis going forward as I'm able to add data from additional seasons to see how things change, or not, as the case may be. This will be especially important if I am building other metrics and models on top of SMA9, like I plan to.
+
+After all of that work, the amount of improvement may not end up mattering as much as I might have initially hoped, but the experimenting it took to reach that conclusion was not only fun and interesting, but also taught me (and hopefully you!) quite a bit.
+
+You can access and use all the code and data used in this analysis at my github here.
