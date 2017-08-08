@@ -434,4 +434,4 @@ I will definitely revisit this analysis going forward as I'm able to add data fr
 
 After all of that work, the amount of improvement may not end up mattering as much as I might have initially hoped, but the experimenting it took to reach that conclusion was not only fun and interesting, but also taught me (and hopefully you!) quite a bit.
 
-You can access and use all the code and data used in this analysis at my github here.
+You can access and use all the code and data used in this analysis at my github [here](https://github.com/brandonsimonsen/nba-moving-averages).
